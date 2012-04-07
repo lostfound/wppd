@@ -23,9 +23,17 @@ import codecs
 from subprocess import * 
 
 dbus_path = "mescaline.gnu.org"
-PREFIX = './'
+pname = os.path.abspath(sys.argv[0])
+if pname.startswith('/usr/local'):
+	PREFIX = u'/usr/local'
+	MOONCLOCK = u'/usr/local/bin/moonclock'
+elif  pname.startswith('/usr/'):
+	PREFIX = u'/usr/'
+	MOONCLOCK='/usr/bin/moonclock'
+else:
+	PREFIX = './'
+	MOONCLOCK='moonclock/moonclock'
 HOME = os.getenv('HOME')
-MOONCLOCK='moonclock/moonclock'
 MOONS_DIR =  os.path.join(PREFIX, 'share/wppd/moon')
 CACHE = os.path.join(HOME, '.cache', 'wppd')
 CONFIG = os.path.join(HOME, '.config', 'wppd')
@@ -94,6 +102,7 @@ def parse_cmd():
 		sys.exit()
 
 	if 'delete' in sys.argv:
+		Delete()
 		sys.exit()
 
 	if 'next' in sys.argv:
@@ -132,10 +141,16 @@ def parse_cmd():
 			save = True
 	
 	print strconf()
+	print ""
 	if save:
 		save_config()
 
 
+def Delete():
+	import dbus
+	bus = dbus.SessionBus()
+	remote_object = bus.get_object(dbus_path, "/Mescaline")
+	rc = remote_object.Delete(dbus_interface = dbus_path)
 def Next():
 	import dbus
 	bus = dbus.SessionBus()

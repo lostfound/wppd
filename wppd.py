@@ -50,19 +50,6 @@ def gen_wallpaper(source, moon=None):
 	else:
 		Popen( [ 'cp', source, WALLPP_PTH ] ).wait()
 
-
-#print get_moon_image_path()
-#gen_wallpaper('source.jpg')
-
-
-timeout = 60*3
-#timeout = 40
-repeat = False
-
-def usage():
-	print "usage: wppd --help|[ [timeout=SEC] [--repeat] ]"
-
-
 def main():
 	wallpapers = map(lambda nm: os.path.join(WALLPAPERS_DIR, nm), os.listdir(WALLPAPERS_DIR))
 	if not SHUFFLE:
@@ -82,8 +69,14 @@ def main():
 		gen_wallpaper(cwp)
 		Popen("hsetroot -full %s" % WALLPP_PTH, shell = True).wait()
 		try:
-			task = q.get(timeout=timeout)
+			task = q.get(timeout=TIMEOUT)
 			q.task_done()
+			if task == "del":
+				os.remove(cwp)
+				try: wallpapers.remove(cwp)
+				except: pass
+				try: rowallpapers.remove(cwp)
+				except: pass
 		except Empty:
 			pass
 		
@@ -100,6 +93,9 @@ class DbusCtrl(dbus.service.Object):
 	@dbus.service.method(dbus_path, in_signature='', out_signature='')
 	def Next(s):
 		q.put( "" )
+	@dbus.service.method(dbus_path, in_signature='', out_signature='')
+	def Delete(s):
+		q.put( "del" )
 if __name__ == "__main__":
 	killwppd()
 	daemon()
