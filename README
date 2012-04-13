@@ -20,7 +20,8 @@ COMMANDLINE:
                [--walldir=dir] [--moonpos=pos] [--save]
         
                 --moon = on|off - draw a phase os moon.
-		--moonpos = NorthWest|North|NorthEast|West|Center|East|SouthWest|South|SouthEast
+		--moonpos = NorthWest|North|NorthEast|West
+		            |Center|East|SouthWest|South|SouthEast
                 --walldir = dir - Directory where wallpapers stored.
         
         * wppd delete|next|kill
