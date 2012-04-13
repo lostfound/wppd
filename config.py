@@ -39,10 +39,37 @@ CACHE = os.path.join(HOME, '.cache', 'wppd')
 CONFIG = os.path.join(HOME, '.config', 'wppd')
 CONFIG_FILE = os.path.join(CONFIG, 'config')
 WALLPP_PTH = os.path.join(CACHE, 'wallpaper.png')
+BLANK_PTH = os.path.join(CACHE, 'blank.png')
 SHUFFLE = False
 TIMEOUT = 60*3.0
 MOON = True
 WALLPAPERS_DIR = os.path.abspath(u'.')
+MOONGRAVITY = "SouthEast"
+GRAVITIES = ["NorthWest", "North", "NorthEast", "West", "Center", "East", "SouthWest", "South", "SouthEast"]
+
+def get_display_size():
+	popn = Popen(["xrandr", "-q"], stdout = PIPE)
+	lines = filter( lambda x: '*' in x, popn.stdout.read().split("\n") )
+	popn.wait()
+	ret = lines[0].strip('\t ').split()[0]
+	return ret
+
+DISPLAY_SIZE = get_display_size()
+
+
+def str_to_bool(arg):
+	if arg.lower() in ['on', 'true', 'yes']:
+		return True
+	else:
+		return False
+
+def set_moongravity(gravity):
+	global MOONGRAVITY
+	if gravity.lower() in map( lambda x: x.lower(), GRAVITIES):
+		MOONGRAVITY = gravity
+	else:
+		MOONGRAVITY = GRAVITIES[0]
+
 
 def read_config():
 	if not os.path.exists( CACHE ):
@@ -64,9 +91,11 @@ def read_config():
 			if opt == 'timeout':
 				TIMEOUT = float(arg)
 			elif opt == 'shuffle':
-				SHUFFLE = bool(arg)
+				SHUFFLE = str_to_bool(arg)
 			elif opt == 'moon':
-				MOON = bool(arg)
+				MOON = str_to_bool(arg)
+			elif opt == "moonpos":
+				set_moongravity(arg)
 			elif opt == 'wallpapers':
 				WALLPAPERS_DIR = arg
 
@@ -77,15 +106,13 @@ def strconf():
 	ret = u"timeout=%f\n" % TIMEOUT
 	ret += u"shuffle=%s\n" % str(SHUFFLE)
 	ret += u"moon=%s\n" % str(MOON)
-	ret += "wallpapers=%s" % WALLPAPERS_DIR
+	ret += u"moonpos=%s\n" % MOONGRAVITY
+	ret += u"wallpapers=%s" % WALLPAPERS_DIR
 	return ret
 
 def save_config():
 	with codecs.open(CONFIG_FILE, "w", 'utf-8') as f:
-		f.write("timeout=%f\n" % TIMEOUT)
-		f.write("shuffle=%s\n" % str(SHUFFLE) )
-		f.write("moon=%s\n" % str(MOON) )
-		f.write("wallpapers=%s" % WALLPAPERS_DIR )
+		f.write( strconf() )
 
 def killwppd():
 	rx = Popen("ps ax | grep python", shell=True, stdout=PIPE)
@@ -113,7 +140,7 @@ def parse_cmd():
 		sys.exit()
 
 	read_config()
-	gopts = ['timeout=', 'shuffle=', 'moon=', 'walldir=', 'save']
+	gopts = ['timeout=', 'shuffle=', 'moon=', 'walldir=', 'moonpos=', 'save']
 	try:
 		optlist, args = getopt.getopt(sys.argv[1:], '', gopts)
 	except	getopt.GetoptError, err:
@@ -127,20 +154,21 @@ def parse_cmd():
 		sys.exit()
 
 	save = False
-	global TIMEOUT, SHUFFLE, MOON, WALLPAPERS_DIR
+	global TIMEOUT, SHUFFLE, MOON, WALLPAPERS_DIR, MOONGRAVITY
 	for opt,arg in optlist:
 		if opt == '--timeout':
 			TIMEOUT = float(arg)
 		elif opt == '--shuffle':
-			SHUFFLE = True if arg=='on' else False
+			SHUFFLE = str_to_bool(arg)
 		elif opt == '--moon':
-			MOON = True if arg=='on' else False
+			MOON = str_to_bool(arg)
+		elif opt == '--moonpos':
+			set_moongravity(arg)
 		elif opt == '--walldir':
 			WALLPAPERS_DIR = arg
 		elif opt == '--save':
 			save = True
 	
-	print strconf()
 	print ""
 	if save:
 		save_config()
@@ -160,7 +188,11 @@ def Next():
 def usage():
 	print ("usage: ")
 	print ("       %s" % "wppd --help" )
-	print ("       %s" % "wppd [--timeout=SEC] [--shuffle=on|off] [--moon=on|off] [--walldir=dir] [--save]" )
+	print ("")
+	print ("       %s" % "wppd [--timeout=SEC] [--shuffle=on|off] [--moon=on|off]\n" +
+	       "       %s" % "     [--walldir=dir] [--moonpos=position] [--save]" )
+	print ("       %s" % "position = NorthWest|North|NorthEast|West|Center|East|SouthWest|South|SouthEast")
+	print ("")
 	print ("       %s" % "wppd delete|next|kill" )
 
 parse_cmd()

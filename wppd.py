@@ -22,7 +22,7 @@ import os,random, time, getopt, sys
 from subprocess import *
 from Queue import Queue, Empty
 from threading import Thread
-from config import MOONS_DIR, WALLPP_PTH, SHUFFLE, TIMEOUT, MOON, WALLPAPERS_DIR, parse_cmd, MOONCLOCK, dbus_path, killwppd
+from config import *
 
 q = Queue()
 def daemon():
@@ -46,10 +46,17 @@ def gen_wallpaper(source, moon=None):
 	if MOON:
 		if moon == None:
 			moon = get_moon_image_path ()
-		Popen( [ 'convert', '-mosaic', source, moon, WALLPP_PTH ] ).wait()
+		Popen( [ 'convert', source, '-resize', DISPLAY_SIZE, WALLPP_PTH ] ).wait()
+		Popen( [ 'composite', '-gravity', 'center', WALLPP_PTH, BLANK_PTH, WALLPP_PTH]).wait()
+		Popen( [ 'composite', '-gravity', MOONGRAVITY, moon, WALLPP_PTH, WALLPP_PTH ] ).wait()
 	else:
-		Popen( [ 'cp', source, WALLPP_PTH ] ).wait()
+		Popen( [ 'convert', source, '-resize', DISPLAY_SIZE, WALLPP_PTH ] ).wait()
+		Popen( [ 'composite', '-gravity', 'center', WALLPP_PTH, BLANK_PTH, WALLPP_PTH]).wait()
 
+def make_blank():
+	size = DISPLAY_SIZE.split('x')
+	draw = '0,0 %s,%s' % (size[0], size[1])
+	Popen(['convert', '-size', DISPLAY_SIZE, 'canvas:none', '-fill', 'black', '-draw', 'rectangle %s' % draw, BLANK_PTH]).wait()
 def main():
 	wallpapers = map(lambda nm: os.path.join(WALLPAPERS_DIR, nm), os.listdir(WALLPAPERS_DIR))
 	if not SHUFFLE:
@@ -59,6 +66,8 @@ def main():
 		print "Error: there are no wallpapers"
 		sys.exit()
 
+	#create BLANK
+	make_blank()
 	while True:
 		cwp = random.choice(wallpapers)
 		if not SHUFFLE:
@@ -84,6 +93,7 @@ def main():
 
 if __name__ == "__main__":
 	parse_cmd()
+	print strconf()
 	import dbus, dbus.service, dbus.mainloop.glib
 	import gobject
 
