@@ -1,37 +1,51 @@
+wppd
+=======
+
 Wallpaper daemon with dbus control
 
-DEPENDENCES:
-        dbus-python
-        imagemagic
-        hsetroot
-	xrandr
+## Dependences:
 
-INSTALLATION:
-        * make install:
-            /usr/local/bin/wppd, /usr/local/bin/moonclock
-            /usr/local/share/wppd/moon/E-MoonClock-??.png
+  * dbus-python
+  * imagemagic
+  * hsetroot
+  * xrandr
+
+## Installation:
+
+Type this command as root:
+
+    $ make install:
+or
+
+    $ PREFIX=/usr make install
+
+## Files & Directories:
+
+    * /usr/local/bin/wppd
+    * /usr/local/bin/moonclock
+    * /usr/local/lib/wppd
+    * /usr/local/share/wppd/moon/E-MoonClock-??.png
+
+## COMMANDLINE:
+
+    * wppd --help    prints usage
+    * wppd [--timeout=SEC] [--shuffle=on|off] [--moon=on|off] 
+           [--walldir=dir] [--moonpos=pos] [--save]
         
-        * PREFIX=/usr make install
-
-
-COMMANDLINE:
-        * wppd --help    prints usage
-        * wppd [--timeout=SEC] [--shuffle=on|off] [--moon=on|off] 
-               [--walldir=dir] [--moonpos=pos] [--save]
+           --moon = on|off - draw a phase os moon.
+           --moonpos = NorthWest|North|NorthEast|West
+	               |Center|East|SouthWest|South|SouthEast
+           --walldir = dir - Directory where wallpapers stored.
         
-                --moon = on|off - draw a phase os moon.
-		--moonpos = NorthWest|North|NorthEast|West
-		            |Center|East|SouthWest|South|SouthEast
-                --walldir = dir - Directory where wallpapers stored.
-        
-        * wppd delete|next|kill
-                remote control
+    * wppd delete|next|kill
+               - remote control
 
-        * moonclock
-                prints the moon phase, it is file in /usr/[local]/share/wppd/moon/
+    * moonclock
+               - prints the moon phase, it is file in /usr/[local]/share/wppd/moon/
 
-CONFIG FILE:
-        $HOME/.config/wppd/config
+## Config file:
+
+    $HOME/.config/wppd/config
         
         
 
